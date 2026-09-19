@@ -24,67 +24,10 @@ The longer-term goal is to extend the same framework into a heterogeneous schedu
 
 ## System Architecture
 
-The project is organized into three stages. The first two are implemented; the third is the planned CPU-GPU extension.
+The project currently contains two separate CPU stages with different goals and workload sizes.
 
-```mermaid
-flowchart LR
-
-    subgraph P3["Phase 3 — Planned CPU-GPU Extension"]
-        C1["Task Workload"] --> C2["Heterogeneous Scheduler"]
-
-        C2 --> C3["CPU Worker Pool"]
-        C2 --> C4["CUDA GPU Execution"]
-
-        C3 --> C5["CPU-GPU Performance Comparison"]
-        C4 --> C5
-    end
-
-
-    subgraph P2["Phase 2 — Parallel CPU Benchmark"]
-        B1["Random Task Generator"] --> B2["1,000-Task Workload"]
-
-        B2 --> B3["scheduler_parallel.c"]
-        B3 --> B4["pthread Worker Pool"]
-        B4 --> B5{"Scheduling Policy"}
-
-        B5 --> B6["FCFS"]
-        B5 --> B7["SJF"]
-        B5 --> B8["Priority"]
-        B5 --> B9["Round Robin"]
-
-        B6 --> B10["1 / 2 / 4 / 8 / 16 / 20 / 24 / 32 Threads"]
-        B7 --> B10
-        B8 --> B10
-        B9 --> B10
-
-        B10 --> B11["Runtime / Speedup / Parallel Efficiency"]
-    end
-
-
-    subgraph P1["Phase 1 — Baseline Scheduling Simulation"]
-        A1["Random Task Generator"] --> A2["50-Task Workload"]
-
-        A2 --> A3["scheduler_baseline.c"]
-        A3 --> A4{"Scheduling Policy"}
-
-        A4 --> A5["FCFS"]
-        A4 --> A6["SJF"]
-        A4 --> A7["Priority"]
-        A4 --> A8["Round Robin"]
-
-        A5 --> A9["Waiting / Turnaround / Response Time"]
-        A6 --> A9
-        A7 --> A9
-        A8 --> A9
-    end
-```
-
-### Why the two CPU stages use different workload sizes
-
-| Stage | Workload | Primary purpose |
-|---|---:|---|
-| Baseline simulator | 50 tasks | Keep task-level scheduling behavior and latency metrics readable |
-| Parallel benchmark | 1,000 tasks | Provide enough CPU-bound work for meaningful scalability measurements |
+```text
+Phase 1 — Baseline Scheduling Simulation
 ----------------------------------------
 Random Task Generator
         |
