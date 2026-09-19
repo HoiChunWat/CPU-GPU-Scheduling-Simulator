@@ -27,32 +27,44 @@ The longer-term goal is to extend the same framework into a heterogeneous schedu
 The project is organized into three stages. The first two are implemented; the third is the planned CPU-GPU extension.
 
 ```mermaid
-flowchart TB
-
+flowchart LR
     subgraph P1["Phase 1 — Baseline Scheduling Simulation"]
-        direction LR
         A1["Random Task Generator"] --> A2["50-Task Workload"]
         A2 --> A3["scheduler_baseline.c"]
-        A3 --> A4["FCFS / SJF / Priority / Round Robin"]
-        A4 --> A5["Waiting / Turnaround / Response Time"]
+        A3 --> A4{"Scheduling Policy"}
+        A4 --> A5["FCFS"]
+        A4 --> A6["SJF"]
+        A4 --> A7["Priority"]
+        A4 --> A8["Round Robin"]
+        A5 --> A9["Waiting / Turnaround / Response Time"]
+        A6 --> A9
+        A7 --> A9
+        A8 --> A9
     end
 
     subgraph P2["Phase 2 — Parallel CPU Benchmark"]
-        direction LR
         B1["Random Task Generator"] --> B2["1,000-Task Workload"]
         B2 --> B3["scheduler_parallel.c"]
-        B3 --> B4["pthread Worker Pool + Scheduling Policies"]
-        B4 --> B5["1–32 Threads<br/>Runtime / Speedup / Efficiency"]
+        B3 --> B4["pthread Worker Pool"]
+        B4 --> B5{"Scheduling Policy"}
+        B5 --> B6["FCFS"]
+        B5 --> B7["SJF"]
+        B5 --> B8["Priority"]
+        B5 --> B9["Round Robin"]
+        B6 --> B10["1 / 2 / 4 / 8 / 16 / 20 / 24 / 32 Threads"]
+        B7 --> B10
+        B8 --> B10
+        B9 --> B10
+        B10 --> B11["Runtime / Speedup / Parallel Efficiency"]
     end
 
     subgraph P3["Phase 3 — Planned CPU-GPU Extension"]
-        direction LR
         C1["Task Workload"] --> C2["Heterogeneous Scheduler"]
-        C2 --> C3["CPU Worker Pool + CUDA GPU Execution"]
-        C3 --> C4["CPU-GPU Performance Comparison"]
+        C2 --> C3["CPU Worker Pool"]
+        C2 --> C4["CUDA GPU Execution"]
+        C3 --> C5["CPU-GPU Performance Comparison"]
+        C4 --> C5
     end
-
-    P1 --> P2 --> P3
 ```
 
 ### Why the two CPU stages use different workload sizes
