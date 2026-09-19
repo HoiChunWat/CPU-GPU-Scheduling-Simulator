@@ -11,6 +11,26 @@ The current implementation contains two completed CPU stages:
 
 ---
 
+## Table of Contents
+
+- [Project Goals](#project-goals)
+- [System Architecture](#system-architecture)
+- [Hardware and Software Environment](#hardware-and-software-environment)
+- [Phase 1 — Single-CPU Scheduling Simulator](#phase-1--single-cpu-scheduling-simulator)
+- [Phase 2 — pthread Parallel Scheduler](#phase-2--pthread-parallel-scheduler)
+- [Parallel Benchmark Results](#parallel-benchmark-results)
+- [Performance Analysis](#performance-analysis)
+- [Design Decisions](#design-decisions)
+- [Build and Run](#build-and-run)
+- [Repository Structure](#repository-structure)
+- [Scope and Current Limitations](#scope-and-current-limitations)
+- [Next Phase — CPU-GPU Heterogeneous Scheduling](#next-phase--cpu-gpu-heterogeneous-scheduling)
+- [Roadmap](#roadmap)
+- [Notes on Reproducibility](#notes-on-reproducibility)
+- [Author](#author)
+
+---
+
 ## Project Goals
 
 This project was built to study two related questions:
@@ -86,7 +106,7 @@ flowchart LR
 | Baseline simulator | 50 tasks | Keep task-level scheduling behavior and latency metrics readable |
 | Parallel benchmark | 1,000 tasks | Provide enough CPU-bound work for meaningful scalability measurements |
 
-The baseline and parallel stages intentionally use different workload sizes because they measure different things:
+The baseline and parallel stages intentionally use different workload sizes because they serve different evaluation goals:
 
 - **Baseline stage:** uses **50 tasks** so individual task parameters and scheduling metrics remain readable.
 - **Parallel stage:** uses **1,000 tasks** to provide enough CPU-bound work for meaningful thread-scaling measurements.
@@ -117,29 +137,29 @@ The current performance results are **CPU-only**. The RTX 4050 is listed because
 
 ---
 
-# Phase 1 — Single-CPU Scheduling Simulator
+## Phase 1 — Single-CPU Scheduling Simulator
 
-## Implemented Scheduling Policies
+### Implemented Scheduling Policies
 
-### First-Come, First-Served (FCFS)
+#### First-Come, First-Served (FCFS)
 
 Tasks are sorted by arrival time and executed in arrival order. FCFS is simple and deterministic, but long tasks can delay shorter tasks that arrive later.
 
-### Shortest Job First (SJF)
+#### Shortest Job First (SJF)
 
 Among tasks that have already arrived, the scheduler selects the unfinished task with the smallest burst time. This generally reduces average waiting and turnaround time for the generated workload.
 
-### Priority Scheduling
+#### Priority Scheduling
 
 Among available tasks, the scheduler selects the task with the highest priority. In this implementation, a **smaller numeric value represents a higher priority**.
 
-### Round Robin (RR)
+#### Round Robin (RR)
 
 Tasks are executed cyclically with a time quantum of **2 burst units**. This allows tasks to receive CPU service earlier, improving responsiveness at the cost of more frequent switching between tasks.
 
 ---
 
-## Task Model
+### Task Model
 
 Each task contains:
 
@@ -161,7 +181,7 @@ The baseline program generates random task IDs and random scheduling parameters,
 
 ---
 
-## Baseline Metrics
+### Baseline Metrics
 
 The simulator computes:
 
@@ -179,7 +199,7 @@ For the sample 50-task run used in this README:
 | Priority | 92.58 | 98.02 | 92.58 |
 | Round Robin | 128.58 | 134.02 | **4.94** |
 
-### Baseline Observations
+#### Baseline Observations
 
 - **SJF produced the lowest average waiting and turnaround time** in this particular random workload because shorter tasks are selected earlier.
 - **Round Robin produced the lowest response time by a large margin** because each ready task receives CPU time quickly instead of waiting for all earlier tasks to finish.
@@ -189,11 +209,11 @@ For the sample 50-task run used in this README:
 
 ---
 
-# Phase 2 — pthread Parallel Scheduler
+## Phase 2 — pthread Parallel Scheduler
 
 The second stage replaces the purely simulated execution model with actual CPU-bound work executed by multiple pthread workers.
 
-## Parallel Design
+### Parallel Design
 
 Each worker repeatedly:
 
@@ -205,7 +225,7 @@ Each worker repeatedly:
 
 Keeping the CPU-bound execution outside the mutex is essential. If the mutex were held while a task was executing, the program would effectively serialize the workload and lose multicore parallelism.
 
-### Shared-State Synchronization
+#### Shared-State Synchronization
 
 A single `pthread_mutex_t` protects shared scheduler state such as:
 
@@ -219,7 +239,7 @@ Round Robin uses a circular queue of **task indices** rather than copying comple
 
 ---
 
-## Synthetic CPU Workload
+### Synthetic CPU Workload
 
 Each burst unit performs a CPU-bound loop:
 
@@ -239,9 +259,9 @@ The parallel benchmark uses **1,000 generated tasks** and evaluates:
 
 ---
 
-# Parallel Benchmark Results
+## Parallel Benchmark Results
 
-## Runtime
+### Runtime
 
 | Threads | FCFS (s) | SJF (s) | Priority (s) | Round Robin (s) |
 |---:|---:|---:|---:|---:|
@@ -258,7 +278,7 @@ The parallel benchmark uses **1,000 generated tasks** and evaluates:
 
 ---
 
-## Speedup
+### Speedup
 
 Speedup is calculated as:
 
@@ -285,7 +305,7 @@ The observed peak speedup is approximately **9.6x**.
 
 ---
 
-## Parallel Efficiency
+### Parallel Efficiency
 
 Parallel efficiency is calculated as:
 
@@ -308,9 +328,9 @@ Efficiency(N) = Speedup(N) / N * 100%
 
 ---
 
-# Performance Analysis
+## Performance Analysis
 
-## 1. Strong scaling from 1 to 16 threads
+### 1. Strong scaling from 1 to 16 threads
 
 Runtime decreases substantially as the worker count increases from 1 to 16 threads.
 
@@ -327,7 +347,7 @@ The workload is CPU-bound and contains many independent tasks, so additional wor
 
 ---
 
-## 2. Saturation near the available logical CPU count
+### 2. Saturation near the available logical CPU count
 
 The system exposes **20 logical CPUs** to WSL.
 
@@ -346,7 +366,7 @@ The 20-, 24-, and 32-thread results should therefore be viewed as the same gener
 
 ---
 
-## 3. Why can 24 or 32 threads occasionally appear slightly faster?
+### 3. Why can 24 or 32 threads occasionally appear slightly faster?
 
 A worker count above the number of visible logical CPUs can occasionally produce a slightly lower measured runtime, but the differences are small.
 
@@ -373,7 +393,7 @@ A more rigorous performance study would repeat each configuration multiple times
 
 ---
 
-## 4. Why does efficiency decrease as thread count increases?
+### 4. Why does efficiency decrease as thread count increases?
 
 Parallel efficiency falls from roughly 90% at low thread counts to about 30% at 32 threads.
 
@@ -381,29 +401,29 @@ This is expected because speedup does not grow linearly with worker count.
 
 The main limiting factors are:
 
-### Hardware concurrency limit
+#### Hardware concurrency limit
 
 Once the number of workers approaches the available logical CPUs, new threads no longer receive independent hardware execution resources.
 
-### Mutex contention
+#### Mutex contention
 
 Workers must serialize briefly when accessing shared scheduler state. The protected critical section is intentionally small, but contention increases as the number of workers grows.
 
-### Thread scheduling and context switching
+#### Thread scheduling and context switching
 
 When the program uses more runnable threads than available logical CPUs, the OS must schedule and switch between them.
 
-### Cache and memory-system contention
+#### Cache and memory-system contention
 
 More concurrent workers compete for shared cache capacity, memory bandwidth, and other processor resources.
 
-### Non-parallel overhead
+#### Non-parallel overhead
 
 Thread creation, synchronization, queue operations, scheduling decisions, and benchmark bookkeeping cannot be perfectly parallelized.
 
 ---
 
-## 5. Scheduling policy vs. thread count
+### 5. Scheduling policy vs. thread count
 
 The four scheduling policies show very similar total runtimes at a given thread count.
 
@@ -416,38 +436,38 @@ The project therefore evaluates two different kinds of behavior:
 
 ---
 
-# Design Decisions
+## Design Decisions
 
-## Why use pthreads?
+### Why use pthreads?
 
 POSIX Threads provide direct control over worker creation, synchronization, and shared-memory execution. This makes the project suitable for studying the mechanics of multicore CPU parallelism rather than relying on a higher-level task runtime.
 
-## Why execute work outside the mutex?
+### Why execute work outside the mutex?
 
 The mutex protects only task selection and shared-state updates. CPU-bound execution occurs after releasing the lock so that multiple workers can perform useful computation concurrently.
 
-## Why store task indices in the Round Robin queue?
+### Why store task indices in the Round Robin queue?
 
 The RR queue stores integer indices into `shared_tasks[]`.
 
 This avoids duplicating entire task structures and keeps one authoritative copy of each task's `remaining_time`.
 
-## Why use a synthetic CPU-bound loop?
+### Why use a synthetic CPU-bound loop?
 
 The original scheduling simulator advances logical time but does not consume measurable CPU time. A synthetic arithmetic workload creates real execution cost while preserving `burst_time` as the amount of work associated with each task.
 
 ---
 
-# Build and Run
+## Build and Run
 
-## Baseline simulator
+### Baseline simulator
 
 ```bash
 gcc scheduler_baseline.c -o scheduler_baseline
 ./scheduler_baseline
 ```
 
-## Parallel pthread version
+### Parallel pthread version
 
 ```bash
 gcc scheduler_parallel.c -o scheduler_parallel -pthread
@@ -456,7 +476,7 @@ gcc scheduler_parallel.c -o scheduler_parallel -pthread
 
 ---
 
-# Repository Structure
+## Repository Structure
 
 ```text
 CPU-GPU-Scheduling-Simulator/
@@ -474,7 +494,7 @@ CPU-GPU-Scheduling-Simulator/
 
 ---
 
-# Current Limitations
+## Scope and Current Limitations
 
 - The benchmark results shown here are from a single measured run per configuration.
 - Random workloads are seeded using the current time, so workload characteristics vary between program runs.
@@ -485,31 +505,15 @@ CPU-GPU-Scheduling-Simulator/
 
 ---
 
-# Next Phase — CPU-GPU Heterogeneous Scheduling
+## Next Phase — CPU-GPU Heterogeneous Scheduling
 
 The next stage will extend the project from a CPU-only scheduler into a heterogeneous execution framework.
 
-Planned architecture:
+The high-level architecture is already shown in the System Architecture section above.
 
-```text
-                         Task Workload
-                              |
-                              v
-                     Heterogeneous Scheduler
-                        /               \
-                       /                 \
-                      v                   v
-              CPU Worker Pool        GPU Task Queue
-                pthreads                 CUDA
-                      \                   /
-                       \                 /
-                        +-------+-------+
-                                |
-                                v
-                     Performance Comparison
-```
+### Planned Experiments
 
-Planned experiments include:
+The next phase will evaluate:
 
 - CPU-only execution,
 - GPU-only execution,
@@ -525,7 +529,7 @@ A key research question for the next phase is:
 
 ---
 
-# Roadmap
+## Roadmap
 
 - [x] Single-CPU scheduling simulator
 - [x] FCFS, SJF, Priority, and Round Robin
