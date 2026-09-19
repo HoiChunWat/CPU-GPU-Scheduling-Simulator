@@ -53,3 +53,7 @@ dkms.conf
 
 # debug information files
 *.dwo
+scheduler_baseline_zh.c
+scheduler_parallel_zh.c
+scheduler_baseline
+scheduler_parallel
