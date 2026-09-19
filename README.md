@@ -31,94 +31,28 @@ flowchart TB
 
     subgraph P1["Phase 1 — Baseline Scheduling Simulation"]
         direction LR
-
-        A1["Random Task Generator"]
-        A2["50-Task Workload"]
-        A3["scheduler_baseline.c"]
-        A4{"Scheduling Policy"}
-
-        A5["FCFS"]
-        A6["SJF"]
-        A7["Priority"]
-        A8["Round Robin"]
-
-        A9["Waiting / Turnaround / Response Time"]
-
-        A1 --> A2
-        A2 --> A3
-        A3 --> A4
-
-        A4 --> A5
-        A4 --> A6
-        A4 --> A7
-        A4 --> A8
-
-        A5 --> A9
-        A6 --> A9
-        A7 --> A9
-        A8 --> A9
+        A1["Random Task Generator"] --> A2["50-Task Workload"]
+        A2 --> A3["scheduler_baseline.c"]
+        A3 --> A4["FCFS / SJF / Priority / Round Robin"]
+        A4 --> A5["Waiting / Turnaround / Response Time"]
     end
-
 
     subgraph P2["Phase 2 — Parallel CPU Benchmark"]
         direction LR
-
-        B1["Random Task Generator"]
-        B2["1,000-Task Workload"]
-        B3["scheduler_parallel.c"]
-        B4["pthread Worker Pool"]
-        B5{"Scheduling Policy"}
-
-        B6["FCFS"]
-        B7["SJF"]
-        B8["Priority"]
-        B9["Round Robin"]
-
-        B10["1 / 2 / 4 / 8 / 16 / 20 / 24 / 32 Threads"]
-        B11["Runtime / Speedup / Parallel Efficiency"]
-
-        B1 --> B2
-        B2 --> B3
-        B3 --> B4
-        B4 --> B5
-
-        B5 --> B6
-        B5 --> B7
-        B5 --> B8
-        B5 --> B9
-
-        B6 --> B10
-        B7 --> B10
-        B8 --> B10
-        B9 --> B10
-
-        B10 --> B11
+        B1["Random Task Generator"] --> B2["1,000-Task Workload"]
+        B2 --> B3["scheduler_parallel.c"]
+        B3 --> B4["pthread Worker Pool + Scheduling Policies"]
+        B4 --> B5["1–32 Threads<br/>Runtime / Speedup / Efficiency"]
     end
-
 
     subgraph P3["Phase 3 — Planned CPU-GPU Extension"]
         direction LR
-
-        C1["Task Workload"]
-        C2["Heterogeneous Scheduler"]
-
-        C3["CPU Worker Pool<br/>pthreads"]
-        C4["CUDA GPU Execution"]
-
-        C5["CPU-GPU Performance Comparison"]
-
-        C1 --> C2
-
-        C2 --> C3
-        C2 --> C4
-
-        C3 --> C5
-        C4 --> C5
+        C1["Task Workload"] --> C2["Heterogeneous Scheduler"]
+        C2 --> C3["CPU Worker Pool + CUDA GPU Execution"]
+        C3 --> C4["CPU-GPU Performance Comparison"]
     end
 
-
-    P1 --> P2
-    P2 --> P3
+    P1 --> P2 --> P3
 ```
 
 ### Why the two CPU stages use different workload sizes
