@@ -55,13 +55,21 @@ The project is organized into three stages. All three stages now have working im
 flowchart LR
 
     subgraph P3["Phase 3 — CPU-GPU Offloading Experiments"]
-        C1["Task / Matrix Workload"] --> C2["CPU-GPU Benchmark / Decision Analysis"]
+        C1["Shared Workload Generator"] --> C2["CPU-GPU Benchmarking"]
 
-        C2 --> C3["Single-thread CPU Baseline"]
-        C2 --> C4["CUDA GPU Execution"]
+        C2 --> C3["Simple Computation"]
+        C2 --> C4["Matrix Multiplication"]
 
-        C3 --> C5["Work(MKN) / K Crossover Analysis"]
-        C4 --> C5
+        C3 --> C5["CPU vs CUDA GPU"]
+        C4 --> C6["CPU vs CUDA GPU"]
+
+        C5 --> C7["Task-count / Iteration Analysis"]
+        C6 --> C8["Work(MKN) / K / R Analysis"]
+
+        C7 --> C9["Crossover Region"]
+        C8 --> C9
+
+        C9 --> C10["Future Device-selection Scheduler"]
     end
 
 
