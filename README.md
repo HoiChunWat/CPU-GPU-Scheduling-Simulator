@@ -111,6 +111,37 @@ flowchart LR
         A8 --> A9
     end
 ```
+## Workflow
+
+```mermaid
+flowchart TD
+
+    A1["Generate Shared Workload"] --> A2["200 Matrix Cases / Simple Cases"]
+
+    A2 --> B1["CPU Execution"]
+    A2 --> B2["CUDA GPU Execution"]
+
+    B1 --> C1["5 Warm-up Runs"]
+    B2 --> C2["5 Warm-up Runs"]
+
+    C1 --> D1["10 Measured Runs"]
+    C2 --> D2["10 Measured Runs"]
+
+    D1 --> E1["Median CPU Time"]
+    D2 --> E2["Median Kernel Time"]
+    D2 --> E3["Median H2D-to-D2H Time"]
+    D2 --> E4["Median Full GPU Time"]
+
+    E1 --> F1["Correctness + Speedup Comparison"]
+    E2 --> F1
+    E3 --> F1
+    E4 --> F1
+
+    F1 --> G1["CPU Winner / GPU Winner"]
+    G1 --> G2["Work Boundary"]
+    G2 --> G3["K Boundary"]
+    G3 --> G4["Decision Region"]
+```
 
 ## Repeatability Validation
 The repeatability workflow validates whether the observed CPU-GPU crossover boundaries remain stable across repeated benchmark runs. Each complete 200-workload experiment is repeated 11 times, and the median Work and K boundaries are used to define a more reliable empirical decision region.
