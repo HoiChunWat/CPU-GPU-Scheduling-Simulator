@@ -112,6 +112,23 @@ flowchart LR
     end
 ```
 
+flowchart TD
+
+    A1["matrix_benchmark.cu"] --> A2["1 Complete Benchmark Run"]
+    A2 --> A3["Extract Work / K Boundaries"]
+
+    A3 --> B1["repeatability_test.py"]
+    B1 --> B2["Repeat 11 Times"]
+    B2 --> B3["Collect 11 Boundary Sets"]
+
+    B3 --> C1["Median Work Boundary"]
+    B3 --> C2["Median K Boundary"]
+
+    C1 --> D1["Stable Overlap Region"]
+    C2 --> D1
+
+    D1 --> E1["Validated CPU-GPU Decision Rule"]
+
 ### Why the two CPU stages use different workload sizes
 
 | Stage | Workload | Primary purpose |
