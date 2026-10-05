@@ -112,7 +112,7 @@ flowchart LR
     end
 ```
 
-### Repeatability Validation
+## Repeatability Validation
 flowchart LR
 ```mermaid
 flowchart TD
@@ -132,7 +132,7 @@ flowchart TD
 
     D1 --> E1["Validated CPU-GPU Decision Rule"]
 ```
-
+end
     
 
 ### Why the two CPU stages use different workload sizes
