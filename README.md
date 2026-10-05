@@ -114,7 +114,7 @@ flowchart LR
 
 ## Repeatability Validation
 ```mermaid
-flowchart LR
+flowchart TD
 
     A1["matrix_benchmark.cu"] --> A2["1 Complete Benchmark Run"]
     A2 --> A3["Extract Work / K Boundaries"]
