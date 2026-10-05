@@ -113,6 +113,7 @@ flowchart LR
 ```
 
 ## Repeatability Validation
+The repeatability workflow validates whether the observed CPU-GPU crossover boundaries remain stable across repeated benchmark runs. Each complete 200-workload experiment is repeated 11 times, and the median Work and K boundaries are used to define a more reliable empirical decision region.
 ```mermaid
 flowchart TD
 
