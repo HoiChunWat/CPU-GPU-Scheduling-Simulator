@@ -55,21 +55,13 @@ The project is organized into three stages. All three stages now have working im
 flowchart LR
 
     subgraph P3["Phase 3 — CPU-GPU Offloading Experiments"]
-        C1["Shared Workload Generator"] --> C2["CPU-GPU Benchmarking"]
+        C1["Task / Matrix Workload"] --> C2["CPU-GPU Benchmark / Decision Analysis"]
 
-        C2 --> C3["Simple Computation"]
-        C2 --> C4["Matrix Multiplication"]
+        C2 --> C3["Single-thread CPU Baseline"]
+        C2 --> C4["CUDA GPU Execution"]
 
-        C3 --> C5["CPU vs CUDA GPU"]
-        C4 --> C6["CPU vs CUDA GPU"]
-
-        C5 --> C7["Task-count / Iteration Analysis"]
-        C6 --> C8["Work(MKN) / K / R Analysis"]
-
-        C7 --> C9["Crossover Region"]
-        C8 --> C9
-
-        C9 --> C10["Future Device-selection Scheduler"]
+        C3 --> C5["Work(MKN) / K Crossover Analysis"]
+        C4 --> C5
     end
 
 
@@ -110,55 +102,7 @@ flowchart LR
         A7 --> A9
         A8 --> A9
     end
-
-Phase 3 Workflow
-flowchart TD
-
-    A1["Generate Shared Workload"] --> A2["200 Matrix Cases / Simple Cases"]
-
-    A2 --> B1["CPU Execution"]
-    A2 --> B2["CUDA GPU Execution"]
-
-    B1 --> C1["5 Warm-up Runs"]
-    B2 --> C2["5 Warm-up Runs"]
-
-    C1 --> D1["10 Measured Runs"]
-    C2 --> D2["10 Measured Runs"]
-
-    D1 --> E1["Median CPU Time"]
-    D2 --> E2["Median Kernel Time"]
-    D2 --> E3["Median H2D-to-D2H Time"]
-    D2 --> E4["Median Full GPU Time"]
-
-    E1 --> F1["Correctness + Speedup Comparison"]
-    E2 --> F1
-    E3 --> F1
-    E4 --> F1
-
-    F1 --> G1["CPU Winner / GPU Winner"]
-    G1 --> G2["Work Boundary"]
-    G2 --> G3["K Boundary"]
-    G3 --> G4["Decision Region"]
-
-
-
-Repeatability Validation
-flowchart TD
-
-    A1["matrix_benchmark.cu"] --> A2["1 Complete Benchmark Run"]
-    A2 --> A3["Extract Work / K Boundaries"]
-
-    A3 --> B1["repeatability_test.py"]
-    B1 --> B2["Repeat 11 Times"]
-    B2 --> B3["Collect 11 Boundary Sets"]
-
-    B3 --> C1["Median Work Boundary"]
-    B3 --> C2["Median K Boundary"]
-
-    C1 --> D1["Stable Overlap Region"]
-    C2 --> D1
-
-    D1 --> E1["Validated CPU-GPU Decision Rule"]
+```
 
 ### Why the two CPU stages use different workload sizes
 
