@@ -113,7 +113,7 @@ flowchart LR
 ```
 
 flowchart TD
-
+flowchart LR
     A1["matrix_benchmark.cu"] --> A2["1 Complete Benchmark Run"]
     A2 --> A3["Extract Work / K Boundaries"]
 
@@ -128,6 +128,8 @@ flowchart TD
     C2 --> D1
 
     D1 --> E1["Validated CPU-GPU Decision Rule"]
+end
+    
 
 ### Why the two CPU stages use different workload sizes
 
